@@ -2,7 +2,7 @@
   "compilerOptions": {
     "target": "ES6", // Versão do JavaScript de destino
     "module": "commonjs", // Sistema de módulos
-    "outDir": "./dist", // Pasta onde os arquivos JavaScript serão gerados
+    "outDir": "dist", // Pasta onde os arquivos JavaScript serão gerados
     "rootDir": "./src", // Pasta onde os arquivos TypeScript estão localizados
     "strict": true, // Ativa verificações de tipo estritas
     "esModuleInterop": true, // Habilita a interoperabilidade com módulos ES
