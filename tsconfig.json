@@ -1,0 +1,16 @@
+{
+  "compilerOptions": {
+    "target": "ES6", // Versão do JavaScript de destino
+    "module": "commonjs", // Sistema de módulos
+    "outDir": "./dist", // Pasta onde os arquivos JavaScript serão gerados
+    "rootDir": "./src", // Pasta onde os arquivos TypeScript estão localizados
+    "strict": true, // Ativa verificações de tipo estritas
+    "esModuleInterop": true, // Habilita a interoperabilidade com módulos ES
+    "experimentalDecorators": true, // Habilita o suporte a decoradores
+    "emitDecoratorMetadata": true, // Emite metadados para decoradores
+    "skipLibCheck": true, // Ignora a verificação dos arquivos de declaração (.d.ts)
+    "forceConsistentCasingInFileNames": true
+  },
+  "include": ["src/**/*"], // Inclui todos os arquivos TypeScript na pasta src
+  "exclude": ["node_modules"] // Exclui a pasta node_modules da compilação
+}
