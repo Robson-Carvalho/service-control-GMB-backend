@@ -1,13 +1,10 @@
 import { DataSource } from "typeorm";
-
-const isProduction = process.env.NODE_ENV === "production";
+import { User } from "./entity/User";
 
 export const AppDataSource = new DataSource({
   type: "mongodb",
   url: process.env.DB_URL,
   useUnifiedTopology: true,
-  entities: [
-    isProduction ? __dirname + "/entity/*.js" : __dirname + "/entity/*.ts",
-  ],
+  entities: [User],
   synchronize: true,
 });
