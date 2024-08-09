@@ -1,14 +1,5 @@
 import { Entity, ObjectIdColumn, Column, BeforeInsert } from "typeorm";
-import {
-  Contains,
-  IsInt,
-  Length,
-  IsEmail,
-  IsFQDN,
-  IsDate,
-  Min,
-  Max,
-} from "class-validator";
+import { Length, IsEmail } from "class-validator";
 
 import { v4 as uuidv4 } from "uuid";
 

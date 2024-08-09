@@ -1,10 +1,9 @@
 import { DataSource } from "typeorm";
-import { User } from "./entity/User";
 
 export const AppDataSource = new DataSource({
   type: "mongodb",
   url: process.env.DB_URL,
   useUnifiedTopology: true,
-  entities: [User],
+  entities: [__dirname + "/../**/*.entity.js"],
   synchronize: true,
 });
