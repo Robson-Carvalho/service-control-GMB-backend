@@ -4,6 +4,6 @@ export const AppDataSource = new DataSource({
   type: "mongodb",
   url: process.env.DB_URL,
   useUnifiedTopology: true,
-  entities: [__dirname + "/../**/*.entity.js"],
+  entities: [__dirname + "/dist/entity/*.js", __dirname + "/entity/*.ts"],
   synchronize: true,
 });
