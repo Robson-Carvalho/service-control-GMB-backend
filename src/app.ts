@@ -17,12 +17,7 @@ AppDataSource.initialize()
 
 const app = express();
 
-app.use(
-  cors({
-    origin: process.env.CORS,
-    methods: ["GET", "POST", "DELETE", "PATCH"],
-  })
-);
+app.use(cors());
 app.use(express.json());
 
 app.use("/v1", router);

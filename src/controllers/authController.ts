@@ -14,7 +14,7 @@ export const login = async (req: Request, res: Response) => {
     const existingUser = await userRepository.findOneBy({ email });
 
     if (!existingUser) {
-      return res.status(401).json({ error: "Email or password invalid" });
+      return res.status(400).json({ error: "Email or password invalid" });
     }
 
     const isValidPassword = await comparePassword(
@@ -23,7 +23,7 @@ export const login = async (req: Request, res: Response) => {
     );
 
     if (!isValidPassword) {
-      return res.status(401).json({ error: "Email or password invalid" });
+      return res.status(400).json({ error: "Email or password invalid" });
     }
 
     const token = await signToken(existingUser._id);
