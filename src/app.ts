@@ -3,6 +3,7 @@ import * as dotenv from "dotenv";
 dotenv.config();
 
 import express from "express";
+import cors from "cors";
 import { AppDataSource } from "./data-source";
 import { router } from "./routes";
 
@@ -15,6 +16,13 @@ AppDataSource.initialize()
   });
 
 const app = express();
+
+app.use(
+  cors({
+    origin: process.env.CORS,
+    methods: ["GET", "POST", "DELETE", "PATCH"],
+  })
+);
 app.use(express.json());
 
 app.use("/v1", router);
