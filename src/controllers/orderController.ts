@@ -72,6 +72,7 @@ export const getAllOrders = async (req: Request, res: Response) => {
 export const getOrderById = async (req: Request, res: Response) => {
   try {
     const { _id } = req.params;
+    console.log(_id);
 
     const order = await orderRepository.findOneBy({ _id });
     if (!order) {
