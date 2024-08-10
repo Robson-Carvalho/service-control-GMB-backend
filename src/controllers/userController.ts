@@ -14,11 +14,14 @@ export const createUser = async (req: Request, res: Response) => {
         .json({ error: "Name, password, and email are required" });
     }
 
+    const role =
+      UserRole[userType as keyof typeof UserRole] || UserRole.DEFAULT;
+
     const newUser = new User();
     newUser.name = name;
     newUser.password = password;
     newUser.email = email;
-    newUser.userType = userType || UserRole.DEFAULT;
+    newUser.userType = role;
 
     const errors: ValidationError[] = await validate(newUser);
 
