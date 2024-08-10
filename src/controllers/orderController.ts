@@ -9,7 +9,7 @@ export const createOrder = async (req: Request, res: Response) => {
   try {
     const { content, userID, inhabitantID } = req.body;
 
-    if (!content || !userID || !inhabitantID) {
+    if (!content || !userID) {
       return res
         .status(400)
         .json({ error: "Content, userID, and inhabitantID are required" });
@@ -47,18 +47,21 @@ export const createOrder = async (req: Request, res: Response) => {
         })
         .filter((error) => error !== null);
 
-      return res.status(400).json({ errors: formattedErrors });
+      throw new Error(JSON.stringify({ errors: formattedErrors }));
     }
 
-    const newOrder = orderRepository.create(order);
+    const newOrder = await orderRepository.create(order);
     await orderRepository.save(newOrder);
 
-    return res.status(201).json(newOrder);
+    return res
+      .status(201)
+      .json({ order: newOrder, message: "Order created successfully" });
   } catch (error) {
     console.error("Error creating order:", error);
     return res.status(500).json({ error: "Internal Server Error" });
   }
 };
+
 export const getAllOrders = async (req: Request, res: Response) => {
   try {
     const orders = await orderRepository.find();
@@ -72,7 +75,6 @@ export const getAllOrders = async (req: Request, res: Response) => {
 export const getOrderById = async (req: Request, res: Response) => {
   try {
     const { _id } = req.params;
-    console.log(_id);
 
     const order = await orderRepository.findOneBy({ _id });
     if (!order) {

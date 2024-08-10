@@ -1,7 +1,8 @@
 import { Request, Response } from "express";
+import { validate, ValidationError } from "class-validator";
+
 import { inhabitantRepository } from "../repositories/inhabitantRepository";
 import { Inhabitant } from "../entity/Inhabitant";
-import { validate, ValidationError } from "class-validator";
 
 export const createInhabitant = async (req: Request, res: Response) => {
   try {
@@ -48,7 +49,9 @@ export const createInhabitant = async (req: Request, res: Response) => {
     const inhabitant = inhabitantRepository.create(newInhabitant);
     await inhabitantRepository.save(inhabitant);
 
-    return res.status(201).json(inhabitant);
+    return res
+      .status(201)
+      .json({ inhabitant, message: "Inhabitant created successfully" });
   } catch (error) {
     console.error("Error creating inhabitant:", error);
     return res.status(500).json({ error: "Internal Server Error" });
@@ -93,7 +96,9 @@ export const updateInhabitant = async (req: Request, res: Response) => {
         .json({ error: "Name, CPF and address are required" });
     }
 
-    const existingInhabitant = await inhabitantRepository.findOneBy({ _id });
+    const existingInhabitant = await inhabitantRepository.findOneBy({
+      _id,
+    });
 
     if (!existingInhabitant) {
       return res.status(404).json({ error: "Inhabitant not registered" });
@@ -141,13 +146,15 @@ export const deleteInhabitant = async (req: Request, res: Response) => {
   try {
     const { _id } = req.params;
 
-    const existingInhabitant = await inhabitantRepository.findOneBy({ _id });
+    const existingInhabitant = await inhabitantRepository.findOneBy({
+      _id,
+    });
 
     if (!existingInhabitant) {
       return res.status(404).json({ error: "Inhabitant not registered" });
     }
 
-    await inhabitantRepository.delete({ _id: existingInhabitant._id });
+    await inhabitantRepository.delete({ _id });
 
     return res.status(200).json({ message: "Inhabitant deleted successfully" });
   } catch (error) {
