@@ -19,6 +19,7 @@ export const createInhabitant = async (req: Request, res: Response) => {
     newInhabitant.cpf = cpf;
     newInhabitant.numberPhone = numberPhone;
     newInhabitant.address = {
+      community: address.community,
       street: address.street,
       number: address.number,
     };
@@ -104,12 +105,25 @@ export const updateInhabitant = async (req: Request, res: Response) => {
       return res.status(404).json({ error: "Inhabitant not registered" });
     }
 
+    let addressCommunity = address.community
+      ? address.community
+      : existingInhabitant.address.community;
+
+    let addressSteet = address.street
+      ? address.street
+      : existingInhabitant.address.street;
+
+    let addressNumber = address.number
+      ? address.number
+      : existingInhabitant.address.number;
+
     existingInhabitant.name = name;
     existingInhabitant.cpf = cpf;
     existingInhabitant.numberPhone = numberPhone;
     existingInhabitant.address = {
-      street: address.street,
-      number: address.number,
+      community: addressCommunity,
+      street: addressSteet,
+      number: addressNumber,
     };
 
     const errors: ValidationError[] = await validate(existingInhabitant);

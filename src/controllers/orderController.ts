@@ -155,3 +155,40 @@ export const deleteOrder = async (req: Request, res: Response) => {
     return res.status(500).json({ error: "Internal Server Error" });
   }
 };
+
+export const getOrdersWithCommunity = async (req: Request, res: Response) => {
+  try {
+    const currentYear = new Date().getFullYear();
+
+    const orders = await orderRepository.find();
+
+    const filteredOrders = await Promise.all(
+      orders
+        .filter((order) => new Date(order.date).getFullYear() === currentYear)
+        .map(async (order) => {
+          const inhabitant = await inhabitantRepository.findOneBy({
+            _id: order.inhabitantID,
+          });
+
+          const formattedDate = new Date(order.date).toLocaleDateString(
+            "pt-BR",
+            {
+              day: "2-digit",
+              month: "2-digit",
+              year: "numeric",
+            }
+          );
+
+          return {
+            community: inhabitant?.address.community || "Unknown",
+            date: formattedDate,
+          };
+        })
+    );
+
+    return res.status(200).json(filteredOrders);
+  } catch (error) {
+    console.error("Error fetching filtered orders:", error);
+    return res.status(500).json({ error: "Internal Server Error" });
+  }
+};
