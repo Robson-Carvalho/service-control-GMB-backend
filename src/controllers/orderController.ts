@@ -9,22 +9,22 @@ export const createOrder = async (req: Request, res: Response) => {
   try {
     const { content, userID, inhabitantID } = req.body;
 
-    if (!content || !userID) {
-      return res
-        .status(400)
-        .json({ error: "Content, userID, and inhabitantID are required" });
+    if (!content) {
+      return res.status(400).json({ error: "Conteúdo é necessário." });
+    } else if (!userID || !inhabitantID) {
+      return res.status(400).json({ error: "Erro interno no método." });
     }
 
     const userExists = await userRepository.findOneBy({ _id: userID });
     if (!userExists) {
-      return res.status(404).json({ error: "User not found" });
+      return res.status(404).json({ error: "Usuário não encontrado." });
     }
 
     const inhabitantExists = await inhabitantRepository.findOneBy({
       _id: inhabitantID,
     });
     if (!inhabitantExists) {
-      return res.status(404).json({ error: "Inhabitant not found" });
+      return res.status(404).json({ error: "Habitante não encontrado." });
     }
 
     const order = new Order();
@@ -55,10 +55,9 @@ export const createOrder = async (req: Request, res: Response) => {
 
     return res
       .status(201)
-      .json({ order: newOrder, message: "Order created successfully" });
+      .json({ order: newOrder, message: "Pedido criado com sucesso." });
   } catch (error) {
-    console.error("Error creating order:", error);
-    return res.status(500).json({ error: "Internal Server Error" });
+    return res.status(500).json({ error: "Erro interno no servidor" });
   }
 };
 
@@ -67,8 +66,7 @@ export const getAllOrders = async (req: Request, res: Response) => {
     const orders = await orderRepository.find();
     return res.status(200).json(orders);
   } catch (error) {
-    console.error("Error fetching orders:", error);
-    return res.status(500).json({ error: "Internal Server Error" });
+    return res.status(500).json({ error: "Erro interno no servidor" });
   }
 };
 
@@ -78,13 +76,12 @@ export const getOrderById = async (req: Request, res: Response) => {
 
     const order = await orderRepository.findOneBy({ _id });
     if (!order) {
-      return res.status(404).json({ error: "Order not found" });
+      return res.status(404).json({ error: "Pedido não encontrado" });
     }
 
     return res.status(200).json(order);
   } catch (error) {
-    console.error("Error fetching order:", error);
-    return res.status(500).json({ error: "Internal Server Error" });
+    return res.status(500).json({ error: "Erro interno no servidor" });
   }
 };
 
@@ -95,7 +92,7 @@ export const updateOrder = async (req: Request, res: Response) => {
 
     const order = await orderRepository.findOneBy({ _id });
     if (!order) {
-      return res.status(404).json({ error: "Order not found" });
+      return res.status(404).json({ error: "Pedido não encontrado" });
     }
 
     if (content !== undefined) order.content = content;
@@ -129,10 +126,9 @@ export const updateOrder = async (req: Request, res: Response) => {
 
     return res
       .status(200)
-      .json({ message: "Order updated successfully", order });
+      .json({ message: "Pedido atualizado com sucesso.", order });
   } catch (error) {
-    console.error("Error updating order:", error);
-    return res.status(500).json({ error: "Internal Server Error" });
+    return res.status(500).json({ error: "Erro interno no servidor" });
   }
 };
 
@@ -142,17 +138,16 @@ export const deleteOrder = async (req: Request, res: Response) => {
 
     const order = await orderRepository.findOneBy({ _id });
     if (!order) {
-      return res.status(404).json({ error: "Order not found" });
+      return res.status(404).json({ error: "Pedido não encontrado." });
     }
 
     await orderRepository.delete({ _id });
 
     return res
       .status(200)
-      .json({ message: "Order deleted successfully", order: order._id });
+      .json({ message: "Pedido deletado com sucesso.", order: order._id });
   } catch (error) {
-    console.error("Error deleting order:", error);
-    return res.status(500).json({ error: "Internal Server Error" });
+    return res.status(500).json({ error: "Erro interno no servidor" });
   }
 };
 
@@ -188,7 +183,6 @@ export const getOrdersWithCommunity = async (req: Request, res: Response) => {
 
     return res.status(200).json(filteredOrders);
   } catch (error) {
-    console.error("Error fetching filtered orders:", error);
-    return res.status(500).json({ error: "Internal Server Error" });
+    return res.status(500).json({ error: "Erro interno no servidor" });
   }
 };

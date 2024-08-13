@@ -8,13 +8,13 @@ export const login = async (req: Request, res: Response) => {
     const { email, password } = req.body;
 
     if (!password || !email) {
-      return res.status(400).json({ error: "Email and password are required" });
+      return res.status(400).json({ error: "E-mail e senha são necessários." });
     }
 
     const existingUser = await userRepository.findOneBy({ email });
 
     if (!existingUser) {
-      return res.status(400).json({ error: "Email or password invalid" });
+      return res.status(400).json({ error: "E-mail e/ou senha inválidos" });
     }
 
     const isValidPassword = await comparePassword(
@@ -23,7 +23,7 @@ export const login = async (req: Request, res: Response) => {
     );
 
     if (!isValidPassword) {
-      return res.status(400).json({ error: "Email or password invalid" });
+      return res.status(400).json({ error: "E-mail e/ou senha inválidos" });
     }
 
     const token = await signToken(existingUser._id);
@@ -33,6 +33,6 @@ export const login = async (req: Request, res: Response) => {
     return res.status(200).json({ userData: userWithoutPassword, token });
   } catch (error) {
     console.error("Error login user:", error);
-    return res.status(500).json({ error: "Internal Server Error" });
+    return res.status(500).json({ error: "Erro interno no serivdor" });
   }
 };

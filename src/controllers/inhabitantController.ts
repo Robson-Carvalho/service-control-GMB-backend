@@ -3,15 +3,24 @@ import { validate, ValidationError } from "class-validator";
 
 import { inhabitantRepository } from "../repositories/inhabitantRepository";
 import { Inhabitant } from "../entity/Inhabitant";
+import { sanitizeCpf } from "../utils/sanitizeCpf";
 
 export const createInhabitant = async (req: Request, res: Response) => {
   try {
-    const { name, cpf, numberPhone, address } = req.body;
+    const { name, numberPhone, address } = req.body;
+    let { cpf } = req.body;
+    cpf = sanitizeCpf(cpf);
 
-    if (!name || !cpf || !address?.street || !address?.number) {
+    if (
+      !name ||
+      !cpf ||
+      !address?.street ||
+      !address.community ||
+      !address?.number
+    ) {
       return res
         .status(400)
-        .json({ error: "Name, CPF and address are required" });
+        .json({ error: "Nome, CPF e endereço são requeridos." });
     }
 
     const newInhabitant = new Inhabitant();
@@ -44,7 +53,7 @@ export const createInhabitant = async (req: Request, res: Response) => {
 
     const existingInhabitant = await inhabitantRepository.findOneBy({ cpf });
     if (existingInhabitant) {
-      return res.status(400).json({ error: "CPF already in use" });
+      return res.status(400).json({ error: "CPF está em uso!" });
     }
 
     const inhabitant = inhabitantRepository.create(newInhabitant);
@@ -52,10 +61,9 @@ export const createInhabitant = async (req: Request, res: Response) => {
 
     return res
       .status(201)
-      .json({ inhabitant, message: "Inhabitant created successfully" });
+      .json({ inhabitant, message: "Habitante adicionando com sucesso!" });
   } catch (error) {
-    console.error("Error creating inhabitant:", error);
-    return res.status(500).json({ error: "Internal Server Error" });
+    return res.status(500).json({ error: "Erro interno no servidor" });
   }
 };
 
@@ -64,8 +72,7 @@ export const getAllInhabitants = async (req: Request, res: Response) => {
     const inhabitants = await inhabitantRepository.find();
     return res.status(200).json(inhabitants);
   } catch (error) {
-    console.error("Error fetching inhabitants:", error);
-    return res.status(500).json({ error: "Internal Server Error" });
+    return res.status(500).json({ error: "Erro interno no servidor" });
   }
 };
 
@@ -76,25 +83,26 @@ export const getInhabitantByCpf = async (req: Request, res: Response) => {
     const existingInhabitant = await inhabitantRepository.findOneBy({ cpf });
 
     if (!existingInhabitant) {
-      return res.status(404).json({ error: "Inhabitant not registered" });
+      return res.status(404).json({ error: "Habitante não encontrado" });
     }
 
     return res.status(200).json(existingInhabitant);
   } catch (error) {
-    console.error("Error fetching inhabitant:", error);
-    return res.status(500).json({ error: "Internal Server Error" });
+    return res.status(500).json({ error: "Erro interno no servidor" });
   }
 };
 
 export const updateInhabitant = async (req: Request, res: Response) => {
   try {
     const { _id } = req.params;
-    const { name, cpf, numberPhone, address } = req.body;
+    const { name, numberPhone, address } = req.body;
+    let { cpf } = req.body;
+    cpf = sanitizeCpf(cpf);
 
     if (!name || !cpf || !address?.street || !address?.number) {
       return res
         .status(400)
-        .json({ error: "Name, CPF and address are required" });
+        .json({ error: "Nome, CPF e endereço são requeridos." });
     }
 
     const existingInhabitant = await inhabitantRepository.findOneBy({
@@ -102,7 +110,7 @@ export const updateInhabitant = async (req: Request, res: Response) => {
     });
 
     if (!existingInhabitant) {
-      return res.status(404).json({ error: "Inhabitant not registered" });
+      return res.status(404).json({ error: "Habitante não encontrado." });
     }
 
     let addressCommunity = address.community
@@ -147,12 +155,11 @@ export const updateInhabitant = async (req: Request, res: Response) => {
     await inhabitantRepository.update({ _id }, existingInhabitant);
 
     return res.status(200).json({
-      message: "Inhabitant updated successfully",
+      message: "Habitante atualizado com sucesso.",
       inhabitant: existingInhabitant,
     });
   } catch (error) {
-    console.error("Error updating inhabitant:", error);
-    return res.status(500).json({ error: "Internal Server Error" });
+    return res.status(500).json({ error: "Erro interno no servidor" });
   }
 };
 
@@ -165,14 +172,13 @@ export const deleteInhabitant = async (req: Request, res: Response) => {
     });
 
     if (!existingInhabitant) {
-      return res.status(404).json({ error: "Inhabitant not registered" });
+      return res.status(404).json({ error: "Habitante não encontrado." });
     }
 
     await inhabitantRepository.delete({ _id });
 
-    return res.status(200).json({ message: "Inhabitant deleted successfully" });
+    return res.status(200).json({ message: "Habitante deletado com sucesso." });
   } catch (error) {
-    console.error("Error deleting inhabitant:", error);
-    return res.status(500).json({ error: "Internal Server Error" });
+    return res.status(500).json({ error: "Erro interno no servidor" });
   }
 };
