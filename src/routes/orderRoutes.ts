@@ -5,6 +5,7 @@ import {
   createOrder,
   deleteOrder,
   getAllOrders,
+  getAllOrdersProcessed,
   getOrderById,
   getOrdersWithCommunity,
   updateOrder,
@@ -14,6 +15,7 @@ export const orderRouter = Router();
 
 orderRouter.post("/order", AuthMiddleware, createOrder);
 orderRouter.get("/order", AuthMiddleware, getAllOrders);
+orderRouter.get("/order/data/view", AuthMiddleware, getAllOrdersProcessed);
 orderRouter.get("/order/:_id", AuthMiddleware, getOrderById);
 orderRouter.get(
   "/order/with/community",

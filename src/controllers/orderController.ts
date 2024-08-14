@@ -4,15 +4,26 @@ import { orderRepository } from "../repositories/orderRepository";
 import { validate, ValidationError } from "class-validator";
 import { userRepository } from "../repositories/userRepository";
 import { inhabitantRepository } from "../repositories/inhabitantRepository";
+import { formatDate } from "../utils/formatDate";
+import { UserRole } from "../entity/User";
+import { sanitizeCpf } from "../utils/sanitizeCpf";
 
 export const createOrder = async (req: Request, res: Response) => {
   try {
-    const { content, userID, inhabitantID } = req.body;
+    const { content, userID } = req.body;
+    let { inhabitantCPF } = req.body;
+    inhabitantCPF = sanitizeCpf(inhabitantCPF);
 
-    if (!content) {
-      return res.status(400).json({ error: "Conteúdo é necessário." });
-    } else if (!userID || !inhabitantID) {
-      return res.status(400).json({ error: "Erro interno no método." });
+    if (!content || !inhabitantCPF) {
+      return res.status(400).json({ error: "Conteúdo e/ou CPF inválido" });
+    } else if (!userID || !inhabitantCPF) {
+      return res.status(400).json({ error: "Erro interno: user ID" });
+    }
+
+    if (content.length > 255) {
+      return res
+        .status(400)
+        .json({ error: "Número máximo de caracteres é 255." });
     }
 
     const userExists = await userRepository.findOneBy({ _id: userID });
@@ -21,16 +32,18 @@ export const createOrder = async (req: Request, res: Response) => {
     }
 
     const inhabitantExists = await inhabitantRepository.findOneBy({
-      _id: inhabitantID,
+      cpf: inhabitantCPF,
     });
     if (!inhabitantExists) {
-      return res.status(404).json({ error: "Habitante não encontrado." });
+      return res
+        .status(404)
+        .json({ error: "Nenhum habitante com esse CPF cadastrado." });
     }
 
     const order = new Order();
     order.content = content;
     order.userID = userID;
-    order.inhabitantID = inhabitantID;
+    order.inhabitantID = inhabitantExists._id;
     order.status = OrderStatusRole.PENDING;
 
     const errors: ValidationError[] = await validate(order);
@@ -85,24 +98,60 @@ export const getOrderById = async (req: Request, res: Response) => {
   }
 };
 
+export const getAllOrdersProcessed = async (req: Request, res: Response) => {
+  try {
+    const orders = await orderRepository.find();
+
+    const processedOrders = await Promise.all(
+      orders.map(async (order) => {
+        const user = await userRepository.findOneBy({ _id: order.userID });
+        const inhabitant = await inhabitantRepository.findOneBy({
+          _id: order.inhabitantID,
+        });
+
+        const role =
+          UserRole[user?.userType as unknown as keyof typeof UserRole] ||
+          UserRole.DEFAULT;
+
+        return {
+          _id: order._id,
+          userType: role,
+          userName: user?.name || "Desconhecido",
+          inhabitantName: inhabitant?.name || "Desconhecido",
+          inhabitantCPF: inhabitant?.cpf || "N/A",
+          content: order.content,
+          status: order.status,
+          date: formatDate(order.date.toString()),
+          date_update: formatDate(order.date_update.toString()),
+        };
+      })
+    );
+
+    return res.status(200).json(processedOrders);
+  } catch (error) {
+    return res.status(500).json({ error: "Erro interno no servidor" });
+  }
+};
+
 export const updateOrder = async (req: Request, res: Response) => {
   try {
     const { _id } = req.params;
     const { content, status } = req.body;
 
     const order = await orderRepository.findOneBy({ _id });
+
     if (!order) {
       return res.status(404).json({ error: "Pedido não encontrado" });
     }
 
-    if (content !== undefined) order.content = content;
-    if (status !== undefined) {
-      const role =
-        OrderStatusRole[status as keyof typeof OrderStatusRole] ||
-        OrderStatusRole.PENDING;
-      order.status = role;
+    if (content.length > 255) {
+      return res
+        .status(400)
+        .json({ error: "Número máximo de caracteres é 255." });
     }
 
+    order.content = content;
+    order.status = status;
     order.date_update = new Date();
 
     const errors: ValidationError[] = await validate(order);

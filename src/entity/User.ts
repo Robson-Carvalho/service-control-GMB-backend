@@ -6,7 +6,7 @@ import { v4 as uuidv4 } from "uuid";
 export enum UserRole {
   BF = "Bolsa Família",
   CRAS = "Centro de Referência de Assistência Social",
-  DEFAULT = "None",
+  DEFAULT = "Desconhecido",
 }
 
 @Entity("users")
