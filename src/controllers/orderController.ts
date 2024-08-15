@@ -109,13 +109,9 @@ export const getAllOrdersProcessed = async (req: Request, res: Response) => {
           _id: order.inhabitantID,
         });
 
-        const role =
-          UserRole[user?.userType as unknown as keyof typeof UserRole] ||
-          UserRole.DEFAULT;
-
         return {
           _id: order._id,
-          userType: role,
+          userType: user?.userType,
           userName: user?.name || "Desconhecido",
           inhabitantName: inhabitant?.name || "Desconhecido",
           inhabitantCPF: inhabitant?.cpf || "N/A",
