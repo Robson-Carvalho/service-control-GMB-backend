@@ -4,20 +4,16 @@ import { validate, ValidationError } from "class-validator";
 import { inhabitantRepository } from "../repositories/inhabitantRepository";
 import { Inhabitant } from "../entity/Inhabitant";
 import { sanitizeCpf } from "../utils/sanitizeCpf";
+import { communityRepository } from "../repositories/communityRepository";
 
 export const createInhabitant = async (req: Request, res: Response) => {
   try {
-    const { name, numberPhone, address } = req.body;
+    const { name, numberPhone, address, communityID } = req.body;
+
     let { cpf } = req.body;
     cpf = sanitizeCpf(cpf);
 
-    if (
-      !name ||
-      !cpf ||
-      !address?.street ||
-      !address.community ||
-      !address?.number
-    ) {
+    if (!name || !cpf || !address?.street || !communityID || !address?.number) {
       return res
         .status(400)
         .json({ error: "Nome, CPF e endereço são requeridos." });
@@ -28,10 +24,16 @@ export const createInhabitant = async (req: Request, res: Response) => {
     newInhabitant.cpf = cpf;
     newInhabitant.numberPhone = numberPhone;
     newInhabitant.address = {
-      community: address.community,
       street: address.street,
       number: address.number,
     };
+    newInhabitant.communityID = communityID;
+
+    const community = await communityRepository.findOneBy({ _id: communityID });
+
+    if (!community) {
+      return res.status(404).json({ error: "Comunidade não encontrada" });
+    }
 
     const errors: ValidationError[] = await validate(newInhabitant);
 
@@ -70,8 +72,33 @@ export const createInhabitant = async (req: Request, res: Response) => {
 export const getAllInhabitants = async (req: Request, res: Response) => {
   try {
     const inhabitants = await inhabitantRepository.find();
-    return res.status(200).json(inhabitants);
-  } catch (error) {
+    const communities = await communityRepository.find();
+
+    const communityMap = new Map<string, string>();
+    communities.forEach((community) => {
+      communityMap.set(community._id.toString(), community.name);
+    });
+
+    const inhabitantsWithCommunityName = inhabitants.map((inhabitant) => {
+      return {
+        ...inhabitant,
+        communityName:
+          communityMap.get(inhabitant.communityID.toString()) ||
+          "Comunidade Desconhecida",
+      };
+    });
+
+    return res.status(200).json(inhabitantsWithCommunityName);
+  } catch (error: unknown) {
+    if (error instanceof Error) {
+      console.error("Erro ao buscar habitantes:", {
+        message: error.message,
+        stack: error.stack,
+        context: "Função getAllInhabitants",
+      });
+    } else {
+      console.error("Erro desconhecido:", error);
+    }
     return res.status(500).json({ error: "Erro interno no servidor" });
   }
 };
@@ -95,7 +122,7 @@ export const getInhabitantByCpf = async (req: Request, res: Response) => {
 export const updateInhabitant = async (req: Request, res: Response) => {
   try {
     const { _id } = req.params;
-    const { name, numberPhone, address } = req.body;
+    const { name, numberPhone, address, communityID } = req.body;
     let { cpf } = req.body;
     cpf = sanitizeCpf(cpf);
 
@@ -113,10 +140,6 @@ export const updateInhabitant = async (req: Request, res: Response) => {
       return res.status(404).json({ error: "Habitante não encontrado." });
     }
 
-    let addressCommunity = address.community
-      ? address.community
-      : existingInhabitant.address.community;
-
     let addressSteet = address.street
       ? address.street
       : existingInhabitant.address.street;
@@ -129,10 +152,16 @@ export const updateInhabitant = async (req: Request, res: Response) => {
     existingInhabitant.cpf = cpf;
     existingInhabitant.numberPhone = numberPhone;
     existingInhabitant.address = {
-      community: addressCommunity,
       street: addressSteet,
       number: addressNumber,
     };
+    existingInhabitant.communityID = communityID;
+
+    const community = await communityRepository.findOneBy({ _id: communityID });
+
+    if (!community) {
+      return res.status(404).json({ error: "Comunidade não encontrada" });
+    }
 
     const errors: ValidationError[] = await validate(existingInhabitant);
 

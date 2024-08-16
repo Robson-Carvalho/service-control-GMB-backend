@@ -5,8 +5,8 @@ import { validate, ValidationError } from "class-validator";
 import { userRepository } from "../repositories/userRepository";
 import { inhabitantRepository } from "../repositories/inhabitantRepository";
 import { formatDate } from "../utils/formatDate";
-import { UserRole } from "../entity/User";
 import { sanitizeCpf } from "../utils/sanitizeCpf";
+import { communityRepository } from "../repositories/communityRepository";
 
 export const createOrder = async (req: Request, res: Response) => {
   try {
@@ -210,6 +210,10 @@ export const getOrdersWithCommunity = async (req: Request, res: Response) => {
             _id: order.inhabitantID,
           });
 
+          const community = await communityRepository.findOneBy({
+            _id: inhabitant?.communityID,
+          });
+
           const formattedDate = new Date(order.date).toLocaleDateString(
             "pt-BR",
             {
@@ -220,7 +224,7 @@ export const getOrdersWithCommunity = async (req: Request, res: Response) => {
           );
 
           return {
-            community: inhabitant?.address.community || "Unknown",
+            community: community?.name || "Desconhecido",
             date: formattedDate,
           };
         })

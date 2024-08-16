@@ -5,7 +5,6 @@ import {
   ValidateNested,
   Validate,
   IsString,
-  IsEnum,
 } from "class-validator";
 import { Type } from "class-transformer";
 import { v4 as uuidv4 } from "uuid";
@@ -48,12 +47,6 @@ class IsCpfConstraint implements ValidatorConstraintInterface {
   }
 }
 
-export enum CommunityName {
-  JACAREZEINHO = "Jacarezeinho",
-  QUEIMADAS = "Queimadas",
-  QUIXABEIRA = "Quixabeira",
-}
-
 @Entity()
 export class Address {
   @Column()
@@ -64,14 +57,6 @@ export class Address {
   @Column()
   @IsNotEmpty()
   number: string = "";
-
-  @Column({
-    type: "enum",
-    enum: CommunityName,
-    default: CommunityName.JACAREZEINHO,
-  })
-  @IsEnum(CommunityName)
-  community: CommunityName = CommunityName.JACAREZEINHO;
 }
 
 @Entity("inhabitants")
@@ -98,6 +83,10 @@ export class Inhabitant {
   @ValidateNested()
   @Type(() => Address)
   address: Address = new Address();
+
+  @Column()
+  @IsNotEmpty()
+  communityID: string = "";
 
   @BeforeInsert()
   generateId() {
